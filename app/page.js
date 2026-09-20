@@ -184,3 +184,4 @@ const btnPrimaryStyle = { padding: '8px 16px', backgroundColor: '#2563eb', color
 const btnSecondaryStyle = { padding: '8px 16px', backgroundColor: '#6b7280', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' };
 const btnEditStyle = { padding: '4px 8px', backgroundColor: '#f59e0b', color: '#fff', border: 'none', borderRadius: '4px', marginRight: '6px', cursor: 'pointer' };
 const btnDeleteStyle = { padding: '4px 8px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' };
+export const dynamic = "force-dynamic";
