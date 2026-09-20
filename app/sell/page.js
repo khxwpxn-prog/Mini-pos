@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabaseClient'; // import ตาม path ที่กำหนด[span_1](start_span)[span_1](end_span)[span_2](start_span)[span_2](end_span)
+import { supabase } from '../../lib/supabaseClient';
 
 export default function SellPage() {
   const [products, setProducts] = useState([]);
@@ -9,7 +9,7 @@ export default function SellPage() {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // ดึงข้อมูลรายการสินค้าทั้งหมดมาใส่ Dropdown[span_3](start_span)[span_3](end_span)
+  // ดึงข้อมูลรายการสินค้าทั้งหมดมาใส่ Dropdown
   const fetchProducts = async () => {
     const { data, error } = await supabase
       .from('products')
@@ -27,24 +27,25 @@ export default function SellPage() {
     fetchProducts();
   }, []);
 
-  // ค้นหาสินค้าที่ถูกเลือก[span_4](start_span)[span_4](end_span)
+  // ค้นหาสินค้าที่ถูกเลือก
   const selectedProduct = products.find((p) => p.id === selectedProductId);
 
-  // คำนวณยอดรวมอัตโนมัติ[span_5](start_span)[span_5](end_span)
+  // คำนวณยอดรวมอัตโนมัติ
   const totalPrice = selectedProduct ? selectedProduct.price * quantity : 0;
 
-  // ฟังก์ชันยิงข้อความเข้า Telegram API
+  // ฟังก์ชันยิงข้อความเข้า Telegram API (เวอร์ชันตรวจเช็ก Error)
   const sendTelegramNotification = async (message) => {
     const botToken = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
     const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;
 
+    // 1. ถ้าหาค่า Env ไม่เจอ จะเด้งเตือนทันที
     if (!botToken || !chatId) {
-      console.warn('ไม่ได้ตั้งค่า Telegram Bot Token หรือ Chat ID ใน Environment Variables');
+      alert('❌ Error: เว็บหาค่า TELEGRAM_BOT_TOKEN หรือ TELEGRAM_CHAT_ID ไม่เจอ!');
       return;
     }
 
     try {
-      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -53,12 +54,20 @@ export default function SellPage() {
           parse_mode: 'HTML',
         }),
       });
+
+      const resData = await res.json();
+
+      // 2. ถ้า Telegram ปฏิเสธ จะเด้งบอกสาเหตุทันที
+      if (!resData.ok) {
+        alert(`❌ Telegram Error: ${resData.description}`);
+      }
     } catch (err) {
       console.error('ส่งข้อความ Telegram ไม่สำเร็จ:', err);
+      alert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ Telegram');
     }
   };
 
-  // จัดการการขายเมื่อกดปุ่ม "ขาย[span_6](start_span)"[span_6](end_span)
+  // จัดการการขายเมื่อกดปุ่ม "ขาย"
   const handleSell = async (e) => {
     e.preventDefault();
 
@@ -74,7 +83,7 @@ export default function SellPage() {
       return;
     }
 
-    // 1. ตรวจสอบว่าสต๊อกเพียงพอหรือไม่[span_7](start_span)[span_7](end_span)
+    // 1. ตรวจสอบว่าสต๊อกเพียงพอหรือไม่
     if (selectedProduct.stock < sellQty) {
       alert(`สินค้าไม่พอขาย! (คงเหลือในสต็อก: ${selectedProduct.stock} ${selectedProduct.unit})`);
       return;
@@ -83,7 +92,7 @@ export default function SellPage() {
     setLoading(true);
 
     try {
-      // 2. บันทึกรายการขายลงตาราง sales[span_8](start_span)[span_8](end_span)[span_9](start_span)[span_9](end_span)
+      // 2. บันทึกรายการขายลงตาราง sales
       const { error: saleError } = await supabase
         .from('sales')
         .insert([
@@ -98,7 +107,7 @@ export default function SellPage() {
 
       if (saleError) throw saleError;
 
-      // 3. ตัดสต๊อกสินค้าในตาราง products[span_10](start_span)[span_10](end_span)[span_11](start_span)[span_11](end_span)
+      // 3. ตัดสต๊อกสินค้าในตาราง products
       const newStock = selectedProduct.stock - sellQty;
       const { error: updateError } = await supabase
         .from('products')
@@ -128,8 +137,8 @@ export default function SellPage() {
         await sendTelegramNotification(lowStockMessage);
       }
 
-      // 6. แจ้งเตือนขายสำเร็จและรีเซ็ตฟอร์ม[span_12](start_span)[span_12](end_span)
-      alert('บันทึกการขายและส่งการแจ้งเตือนสำเร็จ!');
+      // 6. แจ้งเตือนขายสำเร็จและรีเซ็ตฟอร์ม
+      alert('บันทึกการขายสำเร็จ!');
       setSelectedProductId('');
       setQuantity(1);
       fetchProducts();
@@ -197,41 +206,6 @@ export default function SellPage() {
   );
 }
 
-// Style พื้นฐาน[span_13](start_span)[span_13](end_span)[span_14](start_span)[span_14](end_span)
+// Style พื้นฐาน
 const inputStyle = { width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '1rem' };
 const btnStyle = { padding: '12px', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '1rem', fontWeight: 'bold' };
-
-  // ฟังก์ชันยิงข้อความเข้า Telegram API (เวอร์ชันตรวจเช็ก Error)
-  const sendTelegramNotification = async (message) => {
-    const botToken = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;
-
-    // 1. ถ้าหาค่า Env ไม่เจอ จะเด้งเตือนทันที
-    if (!botToken || !chatId) {
-      alert('❌ Error: เว็บหาค่า TELEGRAM_BOT_TOKEN หรือ TELEGRAM_CHAT_ID ไม่เจอ!');
-      return;
-    }
-
-    try {
-      const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: message,
-          parse_mode: 'HTML',
-        }),
-      });
-
-      const resData = await res.json();
-
-      // 2. ถ้า Telegram ปฏิเสธ จะเด้งบอกสาเหตุทันที
-      if (!resData.ok) {
-        alert(`❌ Telegram Error: ${resData.description}`);
-      }
-    } catch (err) {
-      console.error('ส่งข้อความ Telegram ไม่สำเร็จ:', err);
-      alert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ Telegram');
-    }
-  };
-
