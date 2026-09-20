@@ -200,3 +200,38 @@ export default function SellPage() {
 // Style พื้นฐาน[span_13](start_span)[span_13](end_span)[span_14](start_span)[span_14](end_span)
 const inputStyle = { width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '1rem' };
 const btnStyle = { padding: '12px', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '1rem', fontWeight: 'bold' };
+
+  // ฟังก์ชันยิงข้อความเข้า Telegram API (เวอร์ชันตรวจเช็ก Error)
+  const sendTelegramNotification = async (message) => {
+    const botToken = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;
+
+    // 1. ถ้าหาค่า Env ไม่เจอ จะเด้งเตือนทันที
+    if (!botToken || !chatId) {
+      alert('❌ Error: เว็บหาค่า TELEGRAM_BOT_TOKEN หรือ TELEGRAM_CHAT_ID ไม่เจอ!');
+      return;
+    }
+
+    try {
+      const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: message,
+          parse_mode: 'HTML',
+        }),
+      });
+
+      const resData = await res.json();
+
+      // 2. ถ้า Telegram ปฏิเสธ จะเด้งบอกสาเหตุทันที
+      if (!resData.ok) {
+        alert(`❌ Telegram Error: ${resData.description}`);
+      }
+    } catch (err) {
+      console.error('ส่งข้อความ Telegram ไม่สำเร็จ:', err);
+      alert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ Telegram');
+    }
+  };
+
