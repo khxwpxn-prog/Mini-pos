@@ -1,15 +1,18 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req) {
   try {
-    const { message } = await req.json();
+    const body = await req.json();
+    const message = body?.message;
 
     const botToken = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
     const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;
 
     if (!botToken || !chatId) {
       return NextResponse.json(
-        { ok: false, description: 'ไม่พบค่า TELEGRAM_BOT_TOKEN หรือ TELEGRAM_CHAT_ID บน Vercel' },
+        { ok: false, description: 'หาค่า BOT_TOKEN หรือ CHAT_ID ไม่เจอใน Environment Variables' },
         { status: 400 }
       );
     }
