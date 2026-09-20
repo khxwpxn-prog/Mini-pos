@@ -92,3 +92,4 @@ export default function HistoryPage() {
 // Style พื้นฐาน[span_10](start_span)[span_10](end_span)[span_11](start_span)[span_11](end_span)
 const thStyle = { padding: '10px', fontWeight: 'bold' };
 const tdStyle = { padding: '10px' };
+export const dynamic = "force-dynamic";
