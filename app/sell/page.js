@@ -158,3 +158,5 @@ export default function SellPage() {
 // Style พื้นฐาน[span_18](start_span)[span_18](end_span)[span_19](start_span)[span_19](end_span)
 const inputStyle = { width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '1rem' };
 const btnStyle = { padding: '12px', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '1rem', fontWeight: 'bold' };
+export const dynamic = "force-dynamic";
+
